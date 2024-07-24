@@ -1,48 +1,61 @@
 import asyncio
-import logging
-from typing import override
+import multiprocessing
+from datetime import datetime
+from typing import override, final
 
 from aiogram import Bot, Dispatcher
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
 
-from bot.config import BOT_TOKEN
+from bot.api.backup import BackupManager
+from bot.config import BOT_TOKEN, SOURCE_DIR, DESTINATION_DIR
 from bot.utils.utils import singleton
+from handlers.status import router as status_router
+from middleware.register import RegisterMiddleWare
 
 
+@final
 @singleton
 class Startup(object):
-    _logger = logging.getLogger(__name__)
-    _bot = bot = Bot(BOT_TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
+    _bot = Bot(BOT_TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
     _dp = Dispatcher()
+    _backup_manager: BackupManager
 
     @override
-    def __new__(cls, *args, **kwargs):
-        logging.basicConfig(
-            level=logging.INFO,
-            format="%(filename)s:%(lineno)d #%(levelname)-8s "
-                   "[%(asctime)s] - %(name)s - %(message)s",
+    def __init__(
+            self,
+            source_dir: str,
+            destination_dir: str,
+    ):
+        self._backup_manager = BackupManager(
+            timestamp="".join(str(datetime.now())[:10].split(" ")),
+            source_dir=source_dir,
+            destination_dir=destination_dir,
         )
-        cls._logger.info("Setup logger")
-        return super().__new__(cls)
+        self._register_middlewares()
+        self._register_routers()
 
-    @classmethod
-    def get_logger(cls):
-        return cls._logger
-
-    @classmethod
-    def get_bot(cls):
-        return cls._bot
-
-    @classmethod
-    def get_dispatcher(cls):
-        return cls._dp
+    def run_backup_process(self, time: str):
+        backup_process = multiprocessing.Process(target=self._backup_manager.run_backup_task, args=(time, ))
+        backup_process.start()
 
     @classmethod
     async def start_polling(cls):
-        cls._logger.info("Starting polling")
         await cls._dp.start_polling(cls._bot)
 
+    @classmethod
+    def _register_middlewares(cls):
+        cls._dp.message.outer_middleware(RegisterMiddleWare())
 
-startup = Startup()
-asyncio.run(startup.start_polling())
+    @classmethod
+    def _register_routers(cls):
+        cls._dp.include_router(status_router)
+
+
+if __name__ == "__main__":
+    startup = Startup(
+        source_dir=SOURCE_DIR,
+        destination_dir=DESTINATION_DIR,
+    )
+    startup.run_backup_process("19:23")
+    asyncio.run(startup.start_polling())

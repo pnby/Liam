@@ -2,3 +2,7 @@ aiogram~=3.10.0
 python-dotenv~=1.0.1
 envparse~=0.2.0
 SQLAlchemy~=2.0.31
+asyncpg~=0.29.0
+alembic~=1.13.2
+google-api-python-client
+schedule~=1.2.2
