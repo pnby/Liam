@@ -21,15 +21,15 @@ class BackupManager(object):
             source_dir: str,
             destination_dir: str,
     ):
-        self.scopes = [r"https://www.googleapis.com/auth/drive"]
-        self.sa_file_path = rf"{SA_FILE_PATH}"
-        self.gd_manager = GoogleDriveManager(scopes=self.scopes, sa_file_path=self.sa_file_path)
-        self.filename = f"backup-{timestamp}"
-        self.tar_manager = TarManager(source_dir=source_dir, destination_dir=destination_dir, tar_name=self.filename)
+        self._scopes = [r"https://www.googleapis.com/auth/drive"]
+        self._sa_file_path = rf"{SA_FILE_PATH}"
+        self._gd_manager = GoogleDriveManager(scopes=self._scopes, sa_file_path=self._sa_file_path)
+        self._filename = f"backup-{timestamp}"
+        self._tar_manager = TarManager(source_dir=source_dir, destination_dir=destination_dir, tar_name=self._filename)
 
     def create_backup(self) -> bool:
         logger.info("Starting backup procedure")
-        filepath = self.tar_manager.create_tar()
+        filepath = self._tar_manager.create_tar()
         if filepath is None:
             logger.error("Backup procedure failed, filepath is None")
             return False
@@ -37,14 +37,14 @@ class BackupManager(object):
         logger.info("Creating mysql dump")
         self.create_mysql_dump(filepath)
 
-        folder_id = self.gd_manager.get_folder()["id"]
-        self.gd_manager.upload_file(folder_id, self.filename, filepath)
+        folder_id = self._gd_manager.get_folder()["id"]
+        self._gd_manager.upload_file(folder_id, self._filename, filepath)
         logger.info("Backup procedure successfully ended")
 
         return True
 
     def create_mysql_dump(self, backup_dir: str):
-        backup_file = os.path.join(backup_dir, f"{self.filename}.sql")
+        backup_file = os.path.join(backup_dir, f"{self._filename}.sql")
         command = f"mysqldump -u {MYSQL_USER} -p'{MYSQL_PASS}' --all-databases > {backup_file}"
 
         try:
