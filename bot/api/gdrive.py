@@ -8,7 +8,6 @@ from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload
 
 from bot import logger
-from bot.config import SA_FILE_PATH
 
 
 @final
@@ -73,13 +72,3 @@ class GoogleDriveManager(object):
 
     def get_pp(self):
         return self._pp
-
-
-scopes = [r"https://www.googleapis.com/auth/drive"]
-sa_file_path = rf"{SA_FILE_PATH}"
-
-obj = GoogleDriveManager(
-    scopes,
-    sa_file_path=sa_file_path
-)
-print(obj.remove_old_files(1))
