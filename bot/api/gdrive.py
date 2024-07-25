@@ -42,7 +42,7 @@ class GoogleDriveManager(object):
                 if file["mimeType"] == "application/vnd.google-apps.folder" and file["name"] == name:
                     return file
 
-    def clear_old_files(self, days: int, application: str = "x-tar"):
+    def clear_old_files(self, days: int = 2, application: str = "x-tar"):
         files = self.get_files(page_size=100)
         now = datetime.now(timezone.utc).replace(tzinfo=None)
         cutoff_date = now - timedelta(days=days)

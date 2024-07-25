@@ -62,8 +62,6 @@ class BackupManager(object):
         return backup_file
 
     def run_backup_task(self, time: str):
-        logger.info("Starting cleaning old files")
-        self._gd_manager.clear_old_files(2)
-        logger.info("Cleaning old files ended")
-        self._scheduler.add_task(time, self.create_backup)
+        self._scheduler.add_tasks(time, self.create_backup)
+        self._scheduler.add_tasks(time, self._gd_manager.clear_old_files)
         self._scheduler.run()

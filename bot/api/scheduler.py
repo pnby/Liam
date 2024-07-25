@@ -10,7 +10,7 @@ class Scheduler:
     def __init__(self):
         self.jobs = set()
 
-    def add_task(self, time_str, task):
+    def add_tasks(self, time_str, task):
         job = schedule.every().day.at(time_str).do(task)
         self.jobs.add(job)
 
