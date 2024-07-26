@@ -11,6 +11,7 @@ session_maker = async_sessionmaker(engine, expire_on_commit=False)
 Base = declarative_base()
 
 logging.basicConfig(
+    filename="bot.log",
     level=logging.INFO,
     format="%(filename)s:%(lineno)d #%(levelname)-8s [%(asctime)s] - %(name)s - %(message)s",
 )
