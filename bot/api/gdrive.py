@@ -59,8 +59,8 @@ class GoogleDriveManager(object):
             'name': filename,
             'parents': [folder_id]
         }
-        r = self._service.files().create(body=file_metadata, media_body=media, fields='id').execute()
-        return r
+        request = self._service.files().create(body=file_metadata, media_body=media, fields='id')
+        return request
 
     def upload_file(self, folder_id: str, filename: str, file_path: str):
         logger.info("Starting file uploading")
