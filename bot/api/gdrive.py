@@ -8,6 +8,7 @@ from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload
 
 from bot import logger
+from bot.config import SA_FILE_PATH
 
 
 @final
@@ -23,7 +24,7 @@ class GoogleDriveManager(object):
         self._sa_file_path = sa_file_path
         self._credentials = service_account.Credentials.from_service_account_file(
             self._sa_file_path, scopes=self._scopes)
-        self._service = build('drive', 'v3', credentials=self._credentials, always_use_jwt_access=True)
+        self._service = build('drive', 'v3', credentials=self._credentials)
 
     def get_files(self, page_size: int = 10, fields: str = "nextPageToken, files(id, name, mimeType, parents, "
                                                            "createdTime, size)") -> Any:
@@ -54,12 +55,19 @@ class GoogleDriveManager(object):
                 logger.info(f"Deleted file: {file['name']} created at {file['createdTime']}")
 
     def _upload_file(self, folder_id: str, filename: str, file_path: str) -> Any:
-        media = MediaFileUpload(file_path, chunksize=256 * 1024, resumable=True)
+        media = MediaFileUpload(file_path, chunksize=1048576, resumable=True)
         file_metadata = {
             'name': filename,
-            'parents': [folder_id]
+            'parents': [folder_id],
+            'mimeType': 'application/x-tar',
         }
-        request = self._service.files().create(body=file_metadata, media_body=media, fields='id').execute()
+        request = self._service.files().create(body=file_metadata, media_body=media).execute()
+        response = None
+        while response is None:
+            status, response = request.next_chunk()
+            if status:
+                logger.info(f"Uploaded {int(status.progress() * 100)}%")
+
         return request
 
     def upload_file(self, folder_id: str, filename: str, file_path: str):
@@ -70,5 +78,6 @@ class GoogleDriveManager(object):
         total = end_time - start_time
         logger.info(f"File uploading successfully ended for {total} secs")
 
-    def get_pp(self):
-        return self._pp
+    def get_service(self):
+        return self._service
+
