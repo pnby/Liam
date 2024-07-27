@@ -54,7 +54,7 @@ class GoogleDriveManager(object):
                 logger.info(f"Deleted file: {file['name']} created at {file['createdTime']}")
 
     def _upload_file(self, folder_id: str, filename: str, file_path: str) -> Any:
-        media = MediaFileUpload(file_path, resumable=True)
+        media = MediaFileUpload(file_path, chunksize=256 * 1024, resumable=True)
         file_metadata = {
             'name': filename,
             'parents': [folder_id]
