@@ -59,7 +59,7 @@ class GoogleDriveManager(object):
             'name': filename,
             'parents': [folder_id]
         }
-        request = self._service.files().create(body=file_metadata, media_body=media, fields='id')
+        request = self._service.files().create(body=file_metadata, media_body=media, fields='id').execute()
         return request
 
     def upload_file(self, folder_id: str, filename: str, file_path: str):
