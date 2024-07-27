@@ -19,6 +19,9 @@ class TarManager:
     def _create_tar(self) -> None:
         try:
             self.tar_path = cast(str, os.path.join(self.destination_dir, self.tar_name + ".tar"))
+            if os.path.exists(self.tar_path):
+                logger.info(f"{self.tar_path} already exists. Skipping creation.")
+                return
 
             with tarfile.open(self.tar_path, "w") as tar:
                 for root, dirs, files in os.walk(self.source_dir):

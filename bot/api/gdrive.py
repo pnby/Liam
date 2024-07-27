@@ -23,7 +23,7 @@ class GoogleDriveManager(object):
         self._sa_file_path = sa_file_path
         self._credentials = service_account.Credentials.from_service_account_file(
             self._sa_file_path, scopes=self._scopes)
-        self._service = build('drive', 'v3', credentials=self._credentials)
+        self._service = build('drive', 'v3', credentials=self._credentials, always_use_jwt_access=True)
 
     def get_files(self, page_size: int = 10, fields: str = "nextPageToken, files(id, name, mimeType, parents, "
                                                            "createdTime, size)") -> Any:
